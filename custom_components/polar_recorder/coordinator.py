@@ -1,25 +1,41 @@
 from __future__ import annotations
-import logging, time, base64, json, zlib
-from typing import Any, Callable, Dict, List, Optional
+
+import base64
+import json
+import logging
+import time
 import time as _time
-from homeassistant.core import HomeAssistant, Event, State
+import zlib
+from collections.abc import Callable
+from typing import Any
+
 from homeassistant.config_entries import ConfigEntry
+from homeassistant.core import Event, HomeAssistant, State
 from homeassistant.helpers.event import async_track_state_change_event
 from homeassistant.helpers.storage import Store
+
 from .const import (
-    DOMAIN, STORAGE_KEY, STORAGE_VERSION,
-    CONF_TWA, CONF_TWS, CONF_BSP,
-    CONF_TWA_MIN, CONF_TWA_MAX, CONF_TWA_STEP,
-    CONF_TWS_MIN, CONF_TWS_MAX, CONF_TWS_STEP,
-    CONF_FOLD_0_180, CONF_INTERPOLATE,
-    CONF_RECORD_GATE, CONF_MIN_TWS, CONF_MIN_BSP,
-    CONF_TWS_EMA_ALPHA, CONF_LULL_GUARD_DELTA,
+    CONF_BSP,
+    CONF_FOLD_0_180,
+    CONF_LULL_GUARD_DELTA,
+    CONF_TWA,
+    CONF_TWA_MAX,
+    CONF_TWA_MIN,
+    CONF_TWA_STEP,
+    CONF_TWS,
+    CONF_TWS_EMA_ALPHA,
+    CONF_TWS_MAX,
+    CONF_TWS_MIN,
+    CONF_TWS_STEP,
     DEFAULTS,
+    STORAGE_KEY,
+    STORAGE_VERSION,
 )
 
 _LOGGER = logging.getLogger(__name__)
 
 Subscriber = Callable[[], None]
+
 
 class PolarCoordinator:
     """Maintain a (twa|tws)->max_bsp matrix and expose helpers."""
@@ -27,21 +43,21 @@ class PolarCoordinator:
     def __init__(self, hass: HomeAssistant, entry: ConfigEntry) -> None:
         self.hass = hass
         self.entry = entry
-        self._listeners: List[Callable[[], None]] = []
-        self._subs: List[Subscriber] = []
-        self.matrix: Dict[str, float] = {}
-        self.last_update_ts: Optional[float] = None
+        self._listeners: list[Callable[[], None]] = []
+        self._subs: list[Subscriber] = []
+        self.matrix: dict[str, float] = {}
+        self.last_update_ts: float | None = None
         self.recording_enabled: bool = True
         self.store = Store(hass, STORAGE_VERSION, STORAGE_KEY)
         # rotating backups (persisted)
-        self.backup_b1: Optional[str] = None
-        self.backup_b2: Optional[str] = None
-        self.backup_b3: Optional[str] = None
-        self.backup_t1: Optional[str] = None   # "yy-mm-dd HH:MM:SS"
-        self.backup_t2: Optional[str] = None
-        self.backup_t3: Optional[str] = None
+        self.backup_b1: str | None = None
+        self.backup_b2: str | None = None
+        self.backup_b3: str | None = None
+        self.backup_t1: str | None = None  # "yy-mm-dd HH:MM:SS"
+        self.backup_t2: str | None = None
+        self.backup_t3: str | None = None
         # lull guard state
-        self._ema_tws: Optional[float] = None
+        self._ema_tws: float | None = None
 
     async def async_setup(self) -> None:
         await self._async_load()
@@ -74,15 +90,21 @@ class PolarCoordinator:
         self.backup_t3 = b.get("t3")
 
     async def _async_save(self) -> None:
-        await self.store.async_save({
-            "matrix": self.matrix,
-            "ts": self.last_update_ts,
-            "recording": self.recording_enabled,
-            "backups": {
-                "b1": self.backup_b1, "b2": self.backup_b2, "b3": self.backup_b3,
-                "t1": self.backup_t1, "t2": self.backup_t2, "t3": self.backup_t3,
-            },
-        })
+        await self.store.async_save(
+            {
+                "matrix": self.matrix,
+                "ts": self.last_update_ts,
+                "recording": self.recording_enabled,
+                "backups": {
+                    "b1": self.backup_b1,
+                    "b2": self.backup_b2,
+                    "b3": self.backup_b3,
+                    "t1": self.backup_t1,
+                    "t2": self.backup_t2,
+                    "t3": self.backup_t3,
+                },
+            }
+        )
 
     # ---- config view ----
     @property
@@ -113,7 +135,9 @@ class PolarCoordinator:
     def _attach_listeners(self) -> None:
         ents = [self.cfg[CONF_TWA], self.cfg[CONF_TWS], self.cfg[CONF_BSP]]
         for ent in ents:
-            self._listeners.append(async_track_state_change_event(self.hass, [ent], self._on_any_change))
+            self._listeners.append(
+                async_track_state_change_event(self.hass, [ent], self._on_any_change)
+            )
 
     async def _on_any_change(self, _event: Event) -> None:
         if not self._should_record_now():
@@ -150,8 +174,12 @@ class PolarCoordinator:
             return
 
         a_step, s_step = self.cfg[CONF_TWA_STEP], self.cfg[CONF_TWS_STEP]
-        a_bin = self._bin_floor(twa, a_step, self.cfg[CONF_TWA_MIN], self.cfg[CONF_TWA_MAX])
-        s_bin = self._bin_floor(tws, s_step, self.cfg[CONF_TWS_MIN], self.cfg[CONF_TWS_MAX])
+        a_bin = self._bin_floor(
+            twa, a_step, self.cfg[CONF_TWA_MIN], self.cfg[CONF_TWA_MAX]
+        )
+        s_bin = self._bin_floor(
+            tws, s_step, self.cfg[CONF_TWS_MIN], self.cfg[CONF_TWS_MAX]
+        )
         key = f"{self._bin_key(a_bin, a_step)}|{self._bin_key(s_bin, s_step)}"
 
         old = float(self.matrix.get(key, 0))
@@ -182,8 +210,8 @@ class PolarCoordinator:
         except (TypeError, ValueError):
             return False
 
-    def _state_float(self, entity_id: str) -> Optional[float]:
-        st: Optional[State] = self.hass.states.get(entity_id)
+    def _state_float(self, entity_id: str) -> float | None:
+        st: State | None = self.hass.states.get(entity_id)
         if not st:
             return None
         try:
@@ -238,7 +266,7 @@ class PolarCoordinator:
         if "." in s:
             decimals = len(s.split(".")[-1].rstrip("0"))
         if decimals <= 0:
-            return f"{int(round(v))}"
+            return f"{round(v)}"
         return f"{round(v, decimals):.{decimals}f}"
 
     def _gen_bins(self, start: float, stop: float, step: float) -> list[float]:
@@ -269,7 +297,7 @@ class PolarCoordinator:
         }
 
     def export_blob(self) -> str:
-        """Return gz+b64 JSON – safe to store in an attribute."""
+        """Return gz+b64 JSON - safe to store in an attribute."""
         data = json.dumps(self.export_payload(), separators=(",", ":")).encode()
         comp = zlib.compress(data, 9)
         return base64.b64encode(comp).decode()
@@ -314,7 +342,9 @@ class PolarCoordinator:
         return None
 
     # ---- CSV / import ----
-    async def async_import_csv_file(self, path: str, *, merge: bool = False, fill_missing: bool = False) -> None:
+    async def async_import_csv_file(
+        self, path: str, *, merge: bool = False, fill_missing: bool = False
+    ) -> None:
         """Import a CSV from disk into the matrix.
 
         Format:
@@ -328,7 +358,7 @@ class PolarCoordinator:
 
         # Read file and sniff delimiter
         def _read():
-            with open(path, "r", encoding="utf-8") as f:
+            with open(path, encoding="utf-8") as f:
                 data = f.read()
             dialect = csv.Sniffer().sniff(data, delimiters=[",", ";", "\t"])
             rows = list(csv.reader(data.splitlines(), dialect))
@@ -339,7 +369,7 @@ class PolarCoordinator:
             raise ValueError("CSV has no header or not enough columns")
 
         # parse number helper
-        def _num(s: str) -> Optional[float]:
+        def _num(s: str) -> float | None:
             s = (s or "").strip().replace("°", "").replace("kn", "")
             if s == "" or s == "-":
                 return None
@@ -361,7 +391,7 @@ class PolarCoordinator:
             raise ValueError("No numeric TWS headers found in CSV")
 
         # Prepare staging matrix
-        new_matrix: Dict[str, float] = {} if not merge else dict(self.matrix)
+        new_matrix: dict[str, float] = {} if not merge else dict(self.matrix)
 
         # Walk body rows
         for r in rows[1:]:
@@ -417,14 +447,15 @@ class PolarCoordinator:
         await self._async_save()
         self._notify()
 
-    def _fill_missing_bins_inplace(self, mat: Dict[str, float]) -> None:
+    def _fill_missing_bins_inplace(self, mat: dict[str, float]) -> None:
         """Try to fill gaps by averaging available neighbors (conservative)."""
         c = self.cfg
         a_step, s_step = c[CONF_TWA_STEP], c[CONF_TWS_STEP]
         a_bins = self._gen_bins(c[CONF_TWA_MIN], c[CONF_TWA_MAX], a_step)
         s_bins = self._gen_bins(c[CONF_TWS_MIN], c[CONF_TWS_MAX], s_step)
 
-        def key(a, s): return f"{self._bin_key(a, a_step)}|{self._bin_key(s, s_step)}"
+        def key(a, s):
+            return f"{self._bin_key(a, a_step)}|{self._bin_key(s, s_step)}"
 
         changed = True
         for _ in range(3):  # a few passes
@@ -437,7 +468,12 @@ class PolarCoordinator:
                     if k in mat:
                         continue
                     neighbors = []
-                    for da, ds in ((-a_step, 0), (a_step, 0), (0, -s_step), (0, s_step)):
+                    for da, ds in (
+                        (-a_step, 0),
+                        (a_step, 0),
+                        (0, -s_step),
+                        (0, s_step),
+                    ):
                         aa = a + da
                         ss = s + ds
                         if aa < c[CONF_TWA_MIN] or aa >= c[CONF_TWA_MAX]:
@@ -450,7 +486,7 @@ class PolarCoordinator:
                     if len(neighbors) >= 2:
                         mat[k] = round(sum(neighbors) / len(neighbors), 2)
                         changed = True
-                        
+
     # -------- Editable Polar: direct cell/line mutations --------
     async def async_set_cell(self, *, twa: float, tws: float, bsp: float) -> None:
         """Set/override one bin value (BSP) at (TWA, TWS). Bypasses gates/thresholds."""
@@ -459,7 +495,9 @@ class PolarCoordinator:
         if c.get(CONF_FOLD_0_180, True):
             twa = self._fold_0_180(twa)
         # keep within configured ranges
-        if not (c[CONF_TWA_MIN] <= twa < c[CONF_TWA_MAX]) or not (c[CONF_TWS_MIN] <= tws < c[CONF_TWS_MAX]):
+        if not (c[CONF_TWA_MIN] <= twa < c[CONF_TWA_MAX]) or not (
+            c[CONF_TWS_MIN] <= tws < c[CONF_TWS_MAX]
+        ):
             raise ValueError("TWA/TWS outside configured ranges")
 
         a_step, s_step = float(c[CONF_TWA_STEP]), float(c[CONF_TWS_STEP])
@@ -477,7 +515,9 @@ class PolarCoordinator:
         c = self.cfg
         if c.get(CONF_FOLD_0_180, True):
             twa = self._fold_0_180(twa)
-        if not (c[CONF_TWA_MIN] <= twa < c[CONF_TWA_MAX]) or not (c[CONF_TWS_MIN] <= tws < c[CONF_TWS_MAX]):
+        if not (c[CONF_TWA_MIN] <= twa < c[CONF_TWA_MAX]) or not (
+            c[CONF_TWS_MIN] <= tws < c[CONF_TWS_MAX]
+        ):
             raise ValueError("TWA/TWS outside configured ranges")
 
         a_step, s_step = float(c[CONF_TWA_STEP]), float(c[CONF_TWS_STEP])

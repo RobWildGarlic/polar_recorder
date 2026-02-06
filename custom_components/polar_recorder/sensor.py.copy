@@ -163,7 +163,7 @@ def _nearest(self, m, twa, tws, a0, a1, s0, s1, a_step, s_step):
     if not candidates:
         return None
     return round(min(candidates, key=lambda x: x[0])[1], 2)
-    
+
 class PolarPerformanceEntity(_BaseEntity):
     """Current BSP vs Target (%)."""
 

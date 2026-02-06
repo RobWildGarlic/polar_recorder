@@ -1,6 +1,6 @@
 # Polar Recorder (Home Assistant Integration)
 
-Polar Recorder builds a **polar diagram** for your sailing boat by **recording boat speed (BSP)** into bins of **True Wind Angle (TWA)** and **True Wind Speed (TWS)**.  
+Polar Recorder builds a **polar diagram** for your sailing boat by **recording boat speed (BSP)** into bins of **True Wind Angle (TWA)** and **True Wind Speed (TWS)**.
 Over time, the matrix becomes a practical polar diagram you can use for sail trim, performance monitoring, and routing/tactics.
 
 > Domain: `polar_recorder`

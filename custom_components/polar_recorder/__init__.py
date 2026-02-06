@@ -1,26 +1,27 @@
 from __future__ import annotations
-import asyncio
 
+import asyncio
 import logging
-from homeassistant.core import HomeAssistant, ServiceCall
+
 from homeassistant.config_entries import ConfigEntry
+from homeassistant.core import HomeAssistant, ServiceCall
 
 # Only import DOMAIN; define PLATFORMS locally to avoid const import issues
-from .const import DOMAIN
-from .coordinator import PolarCoordinator
-
 # Smart2000ESP integration cooperation
 from .const import (
-    SMART2000ESP_DOMAIN,
-    SMART2000ESP_SERVICE_SET_UPDATE,
     # use configured value instead of a fixed constant:
     CONF_SMART_FAST_SECONDS,
     DEFAULTS,
+    DOMAIN,
+    SMART2000ESP_DOMAIN,
+    SMART2000ESP_SERVICE_SET_UPDATE,
 )
+from .coordinator import PolarCoordinator
 
 _LOGGER = logging.getLogger(__name__)
 
 PLATFORMS: list[str] = ["sensor", "number"]
+
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up Polar Recorder from a config entry."""
@@ -35,7 +36,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     async def _smart_set_interval(seconds: float | None) -> None:
         """Set (or reset) Smart2000ESP update interval if service exists."""
         try:
-            if not hass.services.has_service(SMART2000ESP_DOMAIN, SMART2000ESP_SERVICE_SET_UPDATE):
+            if not hass.services.has_service(
+                SMART2000ESP_DOMAIN, SMART2000ESP_SERVICE_SET_UPDATE
+            ):
                 return
             data = {} if seconds is None else {"seconds": seconds}
             await hass.services.async_call(
@@ -61,7 +64,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     def _state_float(hass: HomeAssistant, entity_id: str, default=None):
         st = hass.states.get(entity_id)
         return _coerce_float(st.state, default) if st else default
-
 
     # --- Services ---
     async def svc_export_csv(call: ServiceCall) -> None:
@@ -95,7 +97,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         await coord.async_set_recording(new_state)
         # Apply corresponding Smart2000ESP behavior using configured value
         if new_state:
-            fast = coord.cfg.get(CONF_SMART_FAST_SECONDS, DEFAULTS[CONF_SMART_FAST_SECONDS])
+            fast = coord.cfg.get(
+                CONF_SMART_FAST_SECONDS, DEFAULTS[CONF_SMART_FAST_SECONDS]
+            )
             try:
                 fast = float(fast)
             except Exception:
@@ -104,10 +108,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         else:
             await _smart_set_interval(None)
 
-# Edit services ---
+    # Edit services ---
     async def svc_set_cell(call: ServiceCall) -> None:
         # Let any just-changed number entities settle
-        await asyncio.sleep(0.08)  # ~80ms is enough; feel free to make 0.05–0.10
+        await asyncio.sleep(0.08)  # ~80ms is enough; feel free to make 0.05-0.10
 
         twa = _coerce_float(call.data.get("twa"))
         tws = _coerce_float(call.data.get("tws"))
@@ -149,7 +153,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         if tws is None or factor is None:
             raise ValueError("Missing TWS/factor (set numbers or pass values)")
         await coord.async_scale_line(tws=float(tws), factor=float(factor))
-
 
     async def svc_backup(_call: ServiceCall) -> None:
         blob = coord.export_blob()

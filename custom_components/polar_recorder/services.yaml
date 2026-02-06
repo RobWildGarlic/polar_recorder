@@ -70,7 +70,7 @@ restore_matrix:
             - latest
             - previous
             - oldest
-            
+
 set_cell:
   name: Set Polar Cell
   description: Set/override one bin value (BSP) at given TWA/TWS (folding and binning follow current config).

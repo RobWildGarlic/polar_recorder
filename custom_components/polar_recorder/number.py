@@ -1,13 +1,15 @@
 # custom_components/polar_recorder/number.py
 from __future__ import annotations
 
+import contextlib
 import logging
+
 from homeassistant.components.number import NumberEntity, NumberMode
-from homeassistant.core import HomeAssistant
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.helpers.restore_state import RestoreEntity
+from homeassistant.core import HomeAssistant
+from homeassistant.helpers.device_registry import DeviceEntryType, DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from homeassistant.helpers.device_registry import DeviceInfo, DeviceEntryType
+from homeassistant.helpers.restore_state import RestoreEntity
 
 from .const import DOMAIN
 from .coordinator import PolarCoordinator
@@ -24,17 +26,59 @@ async def async_setup_entry(
 
     base = _device_info(entry)
     entities: list[NumberEntity] = [
-        _PolarIntNumber(entry.entry_id, coord, "polar_edit_twa", "Polar Edit TWA", "mdi:angle-acute",
-                        0, 180, 1, 0, base),
-        _PolarIntNumber(entry.entry_id, coord, "polar_edit_tws", "Polar Edit TWS", "mdi:windsock",
-                        0, 100, 1, 10, base),
-        _PolarFloatNumber(entry.entry_id, coord, "polar_edit_bsp", "Polar Edit BSP", "mdi:speedometer",
-                          0.0, 50.0, 0.1, 6.0, base),
-        _PolarFloatNumber(entry.entry_id, coord, "polar_scale_factor", "Polar Scale Factor", "mdi:chart-bell-curve",
-                          0.01, 10.0, 0.01, 1.00, base),
+        _PolarIntNumber(
+            entry.entry_id,
+            coord,
+            "polar_edit_twa",
+            "Polar Edit TWA",
+            "mdi:angle-acute",
+            0,
+            180,
+            1,
+            0,
+            base,
+        ),
+        _PolarIntNumber(
+            entry.entry_id,
+            coord,
+            "polar_edit_tws",
+            "Polar Edit TWS",
+            "mdi:windsock",
+            0,
+            100,
+            1,
+            10,
+            base,
+        ),
+        _PolarFloatNumber(
+            entry.entry_id,
+            coord,
+            "polar_edit_bsp",
+            "Polar Edit BSP",
+            "mdi:speedometer",
+            0.0,
+            50.0,
+            0.1,
+            6.0,
+            base,
+        ),
+        _PolarFloatNumber(
+            entry.entry_id,
+            coord,
+            "polar_scale_factor",
+            "Polar Scale Factor",
+            "mdi:chart-bell-curve",
+            0.01,
+            10.0,
+            0.01,
+            1.00,
+            base,
+        ),
     ]
     for e in entities:
-        _LOGGER.debug("[%s] Adding number entity %s (unique_id=%s)", DOMAIN, e.name, e.unique_id)
+        _LOGGER.debug(
+            "[%s] Adding number entity %s (unique_id=%s)", DOMAIN, e.name, e.unique_id
+        )
 
     async_add_entities(entities, update_before_add=True)
 
@@ -87,13 +131,11 @@ class _PolarIntNumber(NumberEntity, RestoreEntity):
     async def async_added_to_hass(self) -> None:
         last = await self.async_get_last_state()
         if last is not None:
-            try:
+            with contextlib.suppress(TypeError, ValueError):
                 self._value = int(float(last.state))
-            except (TypeError, ValueError):
-                pass
 
     async def async_set_native_value(self, value: float) -> None:
-        self._value = int(round(value))
+        self._value = round(value)
         self.async_write_ha_state()
 
 
@@ -135,10 +177,8 @@ class _PolarFloatNumber(NumberEntity, RestoreEntity):
     async def async_added_to_hass(self) -> None:
         last = await self.async_get_last_state()
         if last is not None:
-            try:
+            with contextlib.suppress(TypeError, ValueError):
                 self._value = float(last.state)
-            except (TypeError, ValueError):
-                pass
 
     async def async_set_native_value(self, value: float) -> None:
         self._value = float(value)

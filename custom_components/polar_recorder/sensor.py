@@ -1,28 +1,42 @@
 from __future__ import annotations
-from typing import Any, Optional
 
 from homeassistant.components.sensor import SensorEntity, SensorStateClass
-from homeassistant.const import EntityCategory, PERCENTAGE
-from homeassistant.core import HomeAssistant
 from homeassistant.config_entries import ConfigEntry
+from homeassistant.const import PERCENTAGE, EntityCategory
+from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.event import async_track_state_change_event
 
 from .const import (
-    CONF_TWA, CONF_TWS, CONF_BSP,
-    CONF_TWA_MIN, CONF_TWA_MAX, CONF_TWA_STEP,
-    CONF_TWS_MIN, CONF_TWS_MAX, CONF_TWS_STEP,
-    CONF_FOLD_0_180, CONF_INTERPOLATE,
-    DOMAIN,
+    CONF_BSP,
+    CONF_FOLD_0_180,
+    CONF_INTERPOLATE,
+    CONF_TWA,
+    CONF_TWA_MAX,
+    CONF_TWA_MIN,
+    CONF_TWA_STEP,
+    CONF_TWS,
+    CONF_TWS_MAX,
+    CONF_TWS_MIN,
+    CONF_TWS_STEP,
 )
 from .coordinator import PolarCoordinator
 
-
 # ---------- shared helpers ----------
 
-def _nearest_value(coord: PolarCoordinator, matrix: dict, twa: float, tws: float,
-                   a0: float, a1: float, s0: float, s1: float,
-                   a_step: float, s_step: float):
+
+def _nearest_value(
+    coord: PolarCoordinator,
+    matrix: dict,
+    twa: float,
+    tws: float,
+    a0: float,
+    a1: float,
+    s0: float,
+    s1: float,
+    a_step: float,
+    s_step: float,
+):
     """Pick the nearest populated corner among (a0|s0),(a1|s0),(a0|s1),(a1|s1)."""
     candidates = []
     for a in {a0, a1}:
@@ -36,10 +50,18 @@ def _nearest_value(coord: PolarCoordinator, matrix: dict, twa: float, tws: float
     return round(min(candidates, key=lambda x: x[0])[1], 2)
 
 
-def _bilinear_value(coord: PolarCoordinator, matrix: dict,
-                    twa: float, tws: float,
-                    a0: float, a1: float, s0: float, s1: float,
-                    a_step: float, s_step: float):
+def _bilinear_value(
+    coord: PolarCoordinator,
+    matrix: dict,
+    twa: float,
+    tws: float,
+    a0: float,
+    a1: float,
+    s0: float,
+    s1: float,
+    a_step: float,
+    s_step: float,
+):
     """Bilinear interpolation between four surrounding bins; falls back to nearest if any missing."""
     bk_a0 = coord._bin_key(a0, a_step)
     bk_a1 = coord._bin_key(a1, a_step)
@@ -60,6 +82,7 @@ def _bilinear_value(coord: PolarCoordinator, matrix: dict,
 
 
 # ---------- entities ----------
+
 
 async def async_setup_entry(
     hass: HomeAssistant, entry: ConfigEntry, async_add_entities: AddEntitiesCallback
@@ -118,13 +141,14 @@ class PolarMatrixEntity(_BaseEntity):
         cfg = self._coord.cfg
         # Optional: keep timestamps as attributes (both raw and readable)
         import time as _t
+
         ts = self._coord.last_update_ts
         nice = _t.strftime("%Y-%m-%d %H:%M:%S", _t.localtime(ts)) if ts else None
         return {
             "recording": self._coord.recording_enabled,
             "last_update_ts": ts,
             "last_update": nice,
-            "matrix": self._coord.matrix,                 # LARGE attr
+            "matrix": self._coord.matrix,  # LARGE attr
             "twa_min": cfg[CONF_TWA_MIN],
             "twa_max": cfg[CONF_TWA_MAX],
             "twa_step": cfg[CONF_TWA_STEP],
@@ -133,15 +157,15 @@ class PolarMatrixEntity(_BaseEntity):
             "tws_step": cfg[CONF_TWS_STEP],
             "fold_to_180": cfg.get(CONF_FOLD_0_180, True),
             "interpolate": cfg.get(CONF_INTERPOLATE, False),
-
             # persisted rotating backups (exposed here)
-            "backup_latest":   self._coord.backup_b1,
+            "backup_latest": self._coord.backup_b1,
             "backup_previous": self._coord.backup_b2,
-            "backup_oldest":   self._coord.backup_b3,
-            "backup_latest_ts":   self._coord.backup_t1,
+            "backup_oldest": self._coord.backup_b3,
+            "backup_latest_ts": self._coord.backup_t1,
             "backup_previous_ts": self._coord.backup_t2,
-            "backup_oldest_ts":   self._coord.backup_t3,
+            "backup_oldest_ts": self._coord.backup_t3,
         }
+
 
 class PolarTargetSpeedEntity(_BaseEntity):
     _attr_has_entity_name = True
@@ -181,7 +205,9 @@ class PolarTargetSpeedEntity(_BaseEntity):
         if cfg.get(CONF_FOLD_0_180, True):
             twa = self._coord._fold_0_180(twa)
 
-        if not (cfg[CONF_TWA_MIN] <= twa <= cfg[CONF_TWA_MAX]) or not (cfg[CONF_TWS_MIN] <= tws <= cfg[CONF_TWS_MAX]):
+        if not (cfg[CONF_TWA_MIN] <= twa <= cfg[CONF_TWA_MAX]) or not (
+            cfg[CONF_TWS_MIN] <= tws <= cfg[CONF_TWS_MAX]
+        ):
             return None
 
         a_step, s_step = cfg[CONF_TWA_STEP], cfg[CONF_TWS_STEP]
@@ -192,7 +218,9 @@ class PolarTargetSpeedEntity(_BaseEntity):
 
         m = self._coord.matrix
         if not cfg.get(CONF_INTERPOLATE, False) or a1 == a0 or s1 == s0:
-            return _nearest_value(self._coord, m, twa, tws, a0, a1, s0, s1, a_step, s_step)
+            return _nearest_value(
+                self._coord, m, twa, tws, a0, a1, s0, s1, a_step, s_step
+            )
         return _bilinear_value(self._coord, m, twa, tws, a0, a1, s0, s1, a_step, s_step)
 
 
@@ -238,7 +266,7 @@ class PolarPerformanceEntity(_BaseEntity):
         cfg = self._coord.cfg
         bsp = self._state_float(cfg[CONF_BSP])
         tgt = self._compute_target_like_target_sensor()
-        delta = (None if (bsp is None or tgt is None) else round(bsp - tgt, 2))
+        delta = None if (bsp is None or tgt is None) else round(bsp - tgt, 2)
         return {
             "boat_speed": None if bsp is None else round(bsp, 2),
             "target_speed": tgt,
@@ -256,7 +284,9 @@ class PolarPerformanceEntity(_BaseEntity):
         if cfg.get(CONF_FOLD_0_180, True):
             twa = self._coord._fold_0_180(twa)
 
-        if not (cfg[CONF_TWA_MIN] <= twa <= cfg[CONF_TWA_MAX]) or not (cfg[CONF_TWS_MIN] <= tws <= cfg[CONF_TWS_MAX]):
+        if not (cfg[CONF_TWA_MIN] <= twa <= cfg[CONF_TWA_MAX]) or not (
+            cfg[CONF_TWS_MIN] <= tws <= cfg[CONF_TWS_MAX]
+        ):
             return None
 
         a_step, s_step = cfg[CONF_TWA_STEP], cfg[CONF_TWS_STEP]
@@ -267,5 +297,7 @@ class PolarPerformanceEntity(_BaseEntity):
 
         m = self._coord.matrix
         if not cfg.get(CONF_INTERPOLATE, False) or a1 == a0 or s1 == s0:
-            return _nearest_value(self._coord, m, twa, tws, a0, a1, s0, s1, a_step, s_step)
+            return _nearest_value(
+                self._coord, m, twa, tws, a0, a1, s0, s1, a_step, s_step
+            )
         return _bilinear_value(self._coord, m, twa, tws, a0, a1, s0, s1, a_step, s_step)
