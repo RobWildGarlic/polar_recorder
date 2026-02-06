@@ -1,9 +1,15 @@
+[![HACS Custom](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://hacs.xyz)
 # Polar Recorder (Home Assistant Integration)
 
-Polar Recorder builds a **polar diagram** for your sailing boat by **recording boat speed (BSP)** into bins of **True Wind Angle (TWA)** and **True Wind Speed (TWS)**.
+# Polar Recorder
+
+Polar Recorder is a Home Assistant integration that builds a sailing **polar diagram** for your sailing boat by **recording boat speed (BSP)** into bins of **True Wind Angle (TWA)** and **True Wind Speed (TWS)**.
 Over time, the matrix becomes a practical polar diagram you can use for sail trim, performance monitoring, and routing/tactics.
 
 > Domain: `polar_recorder`
+## Example polar diagram
+
+![Polar diagram example](docs/polar_example.png)
 
 ---
 
@@ -34,7 +40,14 @@ Over time, the matrix becomes a practical polar diagram you can use for sail tri
 ---
 
 ## Installation
-
+### HACS (recommended)
+1.  Open HACS in Home Assistant
+2.  Go to **Integrations**
+3.  Click **⋮ → Custom repositories**
+4.  Add this repository: `https://github.com/robwildgarlic/polar_recorder` Category: **Integration**
+5.  Search  for  **Polar_Recorder**
+6.  Install and restart Home Assistant
+7. Add integration Polar_recorder
 ### Manual installation (custom component)
 
 1. Copy the integration folder into:
@@ -60,6 +73,25 @@ services.yaml
 4. Add the integration:
    - **Settings → Devices & services → Add integration → “Polar Recorder”**
 
+## Configuration
+
+
+
+After installation, go to:
+
+
+
+**Settings → Devices & Services → Add integration → Polar Recorder**
+
+You will be asked to select:
+
+-  Boat speed sensor (BSP)
+
+-  True wind angle sensor (TWA)
+
+-  True wind speed sensor (TWS)
+
+-  Optional minimum speed threshold
 ---
 
 ## Entities
@@ -287,6 +319,8 @@ This integration exposes the following services:
 
 ---
 
-## Changelog
+## License
 
-Keep a short changelog here if you publish releases (HACS/GitHub).
+
+
+This project is licensed under the MIT License.
