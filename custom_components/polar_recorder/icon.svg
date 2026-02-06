@@ -1,0 +1,48 @@
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 256 256"
+  fill="none"
+>
+
+  <!-- Grid arcs -->
+  <path d="M128 10 A88 88 0 0 1 128 246" stroke="#94a3b8" stroke-opacity="0.75" stroke-width="2"/>
+  <path d="M40 128 A128 128 0 0 1 256 128" stroke="#94a3b8" stroke-opacity="0.45" stroke-width="2"/>
+
+  <!-- Grid spokes -->
+  <line x1="40" y1="128" x2="200" y2="64" stroke="#94a3b8" stroke-opacity="0.15"/>
+  <line x1="40" y1="128" x2="200" y2="192" stroke="#94a3b8" stroke-opacity="0.15"/>
+
+  <!-- Low wind -->
+  <path
+    d="M40 128
+       C 80 90, 120 80, 150 95
+       C 175 110, 175 145, 150 160
+       C 120 175, 80 165, 60 145"
+    stroke="#3b82f6"
+    stroke-width="6"
+    fill="none"
+  />
+
+  <!-- Medium wind -->
+  <path
+    d="M40 128
+       C 90 80, 140 65, 180 90
+       C 210 110, 210 150, 180 170
+       C 140 190, 90 180, 65 150"
+    stroke="#22c55e"
+    stroke-width="6"
+    fill="none"
+  />
+
+  <!-- High wind -->
+  <path
+    d="M40 128
+       C 100 70, 165 55, 210 85
+       C 240 110, 240 150, 210 180
+       C 165 205, 100 195, 70 155"
+    stroke="#ef4444"
+    stroke-width="6"
+    fill="none"
+  />
+
+</svg>
