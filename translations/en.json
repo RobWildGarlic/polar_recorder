@@ -1,0 +1,86 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Polar Recorder",
+        "description": "Record maximum boat speeds in bins of True Wind Angle and True Wind Speed to build a polar. Optional gate lets you start/stop recording automatically, but the start/stop services override the gate. Be careful using SOG instead of boat speed because GPS speeds vary wildly and Polar Recorder records every high-speed point, making the polar unusable. If using GPS then find a way to dampen the speed.",
+        "data": {
+          "entity_twa": "True Wind Angle sensor",
+          "entity_tws": "True Wind Speed sensor",
+          "entity_bsp": "Boat speed (STW) sensor",
+          "twa_min": "TWA min (°)",
+          "twa_max": "TWA max (°)",
+          "twa_step": "TWA bin size (°)",
+          "tws_min": "TWS min (kn)",
+          "tws_max": "TWS max (kn)",
+          "tws_step": "TWS bin size (kn)",
+          "fold_to_180": "Fold angles to 0–180° (symmetric port/starboard)",
+          "interpolate": "Interpolate between bins for target speed",
+          "record_gate_entity": "Record gate (optional)",
+          "min_tws": "Minimum TWS to record (kn, optional)",
+          "min_bsp": "Minimum boat speed to record (kn, optional)",
+          "smart_fast_seconds": "Switch Smart2000ESP update interval to this value if recording."
+        },
+        "data_description": {
+          "entity_twa": "Angle relative to bow (degrees). If you only have AWA/AWS, compute TWA/TWS first with a helper (see manual).",
+          "entity_tws": "Wind speed relative to water (knots). Ensure units are knots or convert upstream (see manual).",
+          "entity_bsp": "Speed (boat speed) Through Water (knots). Using SOG will bias true wind in currents, and can show spikes due to GPS variability.",
+          "twa_min": "The minimum TWA in the Polar Diagram (°)",
+          "twa_max": "The maximum TWA in the Polar Diagram (°)",
+          "twa_step": "Typical: 10°. Smaller bins need more data.",
+          "tws_min": "The minimum TWS in the Polar Diagram (knots)",
+          "tws_max": "The maximum TWS in the Polar Diagram (knots)",
+          "tws_step": "Typical: 2 kn. Choose smaller for fine detail.",
+          "fold_to_180": "Recommended ON (stores a half-polar). Turn OFF for separate port/starboard.",
+          "interpolate": "ON blends nearby bins (bilinear). Falls back to nearest if data missing.",
+          "record_gate_entity": "Recording allowed only when this entity is ON/true/non-zero. Leave empty to always allow. NOTE: the start/stop services override this gate!",
+          "min_tws": "Filter out calms or anemometer noise.",
+          "min_bsp": "Filter out idle/harbor speeds or motoring.",
+          "smart_fast_seconds": "You have Smart2000ESP running. Polar Recorder will change the update interval of Smart2000ESP to this value when Polar Recorder starts recording. If it stops recording Smart2000ESP will return to it's default (5s)."
+        }
+      }
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Polar Recorder – Options",
+        "description": "Record maximum boat speeds in bins of True Wind Angle and True Wind Speed to build a polar. Optional gate lets you start/stop recording automatically, but the start/stop services override the gate. Be careful using SOG instead of boat speed because GPS speeds vary wildly and Polar Recorder records every high-speed point, making the polar unusable. If using GPS then find a way to dampen the speed.",
+        "data": {
+          "entity_twa": "True Wind Angle sensor",
+          "entity_tws": "True Wind Speed sensor",
+          "entity_bsp": "Boat speed (STW) sensor",
+          "twa_min": "TWA min (°)",
+          "twa_max": "TWA max (°)",
+          "twa_step": "TWA bin size (°)",
+          "tws_min": "TWS min (kn)",
+          "tws_max": "TWS max (kn)",
+          "tws_step": "TWS bin size (kn)",
+          "fold_to_180": "Fold angles to 0–180° (symmetric)",
+          "interpolate": "Interpolate between bins",
+          "record_gate_entity": "Record gate (optional)",
+          "min_tws": "Minimum TWS to record (kn, optional)",
+          "min_bsp": "Minimum boat speed to record (kn, optional)",
+          "smart_fast_seconds": "Switch Smart2000ESP update interval to this value if recording."
+        },
+        "data_description": {
+          "entity_twa": "Angle relative to bow (degrees). If you only have AWA/AWS, compute TWA/TWS first with a helper (see manual).",
+          "entity_tws": "Wind speed relative to water (knots). Ensure units are knots or convert upstream (see manual).",
+          "entity_bsp": "Speed (boat speed) Through Water (knots). Using SOG will bias true wind in currents, and can show spikes due to GPS variability.",
+          "twa_min": "The minimum TWA in the Polar Diagram (°)",
+          "twa_max": "The maximum TWA in the Polar Diagram (°)",
+          "twa_step": "Typical: 10°. Smaller bins need more data.",
+          "tws_min": "The minimum TWS in the Polar Diagram (knots)",
+          "tws_max": "The maximum TWS in the Polar Diagram (knots)",
+          "tws_step": "Typical: 2 kn. Choose smaller for fine detail.",
+          "fold_to_180": "Recommended ON (stores a half-polar). Turn OFF for separate port/starboard.",
+          "interpolate": "ON blends nearby bins (bilinear). Falls back to nearest if data missing.",
+          "record_gate_entity": "Recording allowed only when this entity is ON/true/non-zero. Leave empty to always allow. NOTE: the start/stop services override this gate!",
+          "min_tws": "Filter out calms or anemometer noise.",
+          "min_bsp": "Filter out idle/harbor speeds or motoring.",
+          "smart_fast_seconds": "You have Smart2000ESP running. Polar Recorder will change the update interval of Smart2000ESP to this value when Polar Recorder starts recording. If it stops recording Smart2000ESP will return to it's default (5s)."
+        }
+      }
+    }
+  }
+}

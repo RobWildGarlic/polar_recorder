@@ -1,0 +1,153 @@
+export_csv:
+  name: Export CSV
+  description: Export the polar matrix to a CSV file in /config (served under /local).
+  fields:
+    path:
+      name: File path
+      description: Where to write the CSV (e.g. /config/www/polars.csv).
+      required: true
+      selector:
+        text: {}
+
+import_csv:
+  name: Import CSV
+  description: Import a polar matrix from a CSV file (backs up current matrix first).
+  fields:
+    path:
+      name: CSV file path
+      description: Full path under /config (e.g. /config/www/polars.csv).
+      required: true
+      selector:
+        text: {}
+    merge:
+      name: Merge mode
+      description: Keep the maximum of imported vs existing values per bin (instead of overwrite).
+      required: false
+      default: false
+      selector:
+        boolean: {}
+    fill_missing:
+      name: Fill missing cells
+      description: Fill empty bins by averaging neighbors (conservative).
+      required: false
+      default: false
+      selector:
+        boolean: {}
+
+reset:
+  name: Reset Matrix
+  description: Clear the polar matrix.
+
+start_recording:
+  name: Start Recording
+  description: Enable polar recording.
+
+stop_recording:
+  name: Stop Recording
+  description: Disable polar recording.
+
+toggle_recording:
+  name: Toggle Recording
+  description: If Idle, start recording; if Recording, stop.
+
+backup_matrix:
+  name: Backup Matrix
+  description: Save a backup snapshot of the current matrix.
+
+restore_matrix:
+  name: Restore Matrix
+  description: Restore a matrix from the latest/previous/oldest backup.
+  fields:
+    which:
+      name: Which backup
+      description: Which slot to restore.
+      required: false
+      default: latest
+      selector:
+        select:
+          mode: dropdown
+          options:
+            - latest
+            - previous
+            - oldest
+            
+set_cell:
+  name: Set Polar Cell
+  description: Set/override one bin value (BSP) at given TWA/TWS (folding and binning follow current config).
+  fields:
+    twa:
+      name: True Wind Angle (°)
+      description: Angle relative to bow; will be folded to 0–180° if configured.
+      required: false
+      selector:
+        number:
+          min: -180
+          max: 360
+          step: 0.1
+          mode: box
+    tws:
+      name: True Wind Speed (kn)
+      description: Will be snapped to the configured TWS bin.
+      required: false
+      selector:
+        number:
+          min: 0
+          max: 100
+          step: 0.1
+          mode: box
+    bsp:
+      name: Boat speed (kn)
+      description: Value to store at that bin.
+      required: false
+      selector:
+        number:
+          min: 0
+          max: 50
+          step: 0.1
+          mode: box
+
+clear_cell:
+  name: Clear Polar Cell
+  description: Delete the value at the given TWA/TWS bin (no error if empty).
+  fields:
+    twa:
+      name: True Wind Angle (°)
+      required: false
+      selector:
+        number:
+          min: -180
+          max: 360
+          step: 0.1
+          mode: box
+    tws:
+      name: True Wind Speed (kn)
+      required: false
+      selector:
+        number:
+          min: 0
+          max: 100
+          step: 0.1
+          mode: box
+
+scale_line:
+  name: Scale Polar Line
+  description: Multiply all bins at a specific TWS by a factor (e.g., 0.95 to reduce by 5%).
+  fields:
+    tws:
+      name: True Wind Speed (kn)
+      required: false
+      selector:
+        number:
+          min: 0
+          max: 100
+          step: 0.1
+          mode: box
+    factor:
+      name: Multiply by
+      required: false
+      selector:
+        number:
+          min: 0.01
+          max: 10
+          step: 0.01
+          mode: box
