@@ -267,6 +267,294 @@ data:
 - Record on both tacks (especially if sensors are imperfect).
 - Prefer “steady-state” trimmed runs.
 
+## Create a card to show polar diagram
+
+Needs: HACS dashboard `Plotly Graph Card` - install it yourself.
+Best to create a view with layout `Panel (single card)`.
+Create a `Manual card` and paste the yaml below into that.
+```yaml
+type: custom:plotly-graph
+title: Boat Polar
+entities:
+  - entity: sensor.polar_matrix
+    name: TWS 6 kn
+    type: scatterpolar
+    mode: lines
+    line:
+      shape: spline
+    r: |-
+      $fn(({hass}) => {
+        const st = hass?.states?.['sensor.polar_matrix'];
+        if (!st || !st.attributes) return [];
+        const a = st.attributes, M = a.matrix || {};
+        const aMin = Number(a.twa_min)||0, aMax = Number(a.twa_max)||180, aStep = Number(a.twa_step)||10;
+        const sMin = Number(a.tws_min)||0,  sStep = Number(a.tws_step)||2;
+        const stepDec = (step)=> (String(step).split('.')[1]||'').replace(/0+$/,'').length;
+        const fmt = (v,step)=>{ const d=stepDec(step); return d ? v.toFixed(d) : String(Math.round(v)); };
+        const targetS = 6;
+        const idxNearest = Math.round((targetS - sMin) / sStep);
+        const sCandidates = [sMin + idxNearest*sStep, sMin + (idxNearest-1)*sStep, sMin + (idxNearest+1)*sStep];
+        let chosenS=null;
+        for (const s0 of sCandidates) { for (let A=aMin; A<aMax; A+=aStep) { if (M[`${fmt(A,aStep)}|${fmt(s0,sStep)}`] != null) { chosenS=s0; break; } } if (chosenS!=null) break; }
+        if (chosenS==null) return [];
+        const out=[]; for (let A=aMin; A<aMax; A+=aStep) { const v=M[`${fmt(A,aStep)}|${fmt(chosenS,sStep)}`]; out.push(v==null?null:Math.round(v*10)/10); }
+        return out;
+      })
+    theta: |-
+      $fn(({hass}) => {
+        const st = hass?.states?.['sensor.polar_matrix'];
+        if (!st || !st.attributes) return [];
+        const a = st.attributes;
+        const aMin = Number(a.twa_min)||0, aMax = Number(a.twa_max)||180, aStep = Number(a.twa_step)||10;
+        const th=[]; for (let A=aMin; A<aMax; A+=aStep) th.push(A); return th;
+      })
+  - entity: sensor.polar_matrix
+    name: TWS 8 kn
+    type: scatterpolar
+    mode: lines
+    line:
+      shape: spline
+    r: |-
+      $fn(({hass}) => {
+        const st = hass?.states?.['sensor.polar_matrix'];
+        if (!st || !st.attributes) return [];
+        const a = st.attributes, M = a.matrix || {};
+        const aMin = Number(a.twa_min)||0, aMax = Number(a.twa_max)||180, aStep = Number(a.twa_step)||10;
+        const sMin = Number(a.tws_min)||0,  sStep = Number(a.tws_step)||2;
+        const stepDec = (step)=> (String(step).split('.')[1]||'').replace(/0+$/,'').length;
+        const fmt = (v,step)=>{ const d=stepDec(step); return d ? v.toFixed(d) : String(Math.round(v)); };
+        const targetS = 8;
+        const idxNearest = Math.round((targetS - sMin) / sStep);
+        const sCandidates = [sMin + idxNearest*sStep, sMin + (idxNearest-1)*sStep, sMin + (idxNearest+1)*sStep];
+        let chosenS=null;
+        for (const s0 of sCandidates) { for (let A=aMin; A<aMax; A+=aStep) { if (M[`${fmt(A,aStep)}|${fmt(s0,sStep)}`] != null) { chosenS=s0; break; } } if (chosenS!=null) break; }
+        if (chosenS==null) return [];
+        const out=[]; for (let A=aMin; A<aMax; A+=aStep) { const v=M[`${fmt(A,aStep)}|${fmt(chosenS,sStep)}`]; out.push(v==null?null:Math.round(v*10)/10); }
+        return out;
+      })
+    theta: >-
+      $fn(({hass}) => { const
+      a=hass?.states?.['sensor.polar_matrix']?.attributes; if(!a) return [];
+      const th=[]; for(let A=(+a.twa_min||0); A<(+a.twa_max||180);
+      A+=(+a.twa_step||10)) th.push(A); return th; })
+  - entity: sensor.polar_matrix
+    name: TWS 10 kn
+    type: scatterpolar
+    mode: lines
+    line:
+      shape: spline
+    r: |-
+      $fn(({hass}) => {
+        const st = hass?.states?.['sensor.polar_matrix'];
+        if (!st || !st.attributes) return [];
+        const a = st.attributes, M = a.matrix || {};
+        const aMin = Number(a.twa_min)||0, aMax = Number(a.twa_max)||180, aStep = Number(a.twa_step)||10;
+        const sMin = Number(a.tws_min)||0,  sStep = Number(a.tws_step)||2;
+        const stepDec = (step)=> (String(step).split('.')[1]||'').replace(/0+$/,'').length;
+        const fmt = (v,step)=>{ const d=stepDec(step); return d ? v.toFixed(d) : String(Math.round(v)); };
+        const targetS = 10;
+        const idxNearest = Math.round((targetS - sMin) / sStep);
+        const sCandidates = [sMin + idxNearest*sStep, sMin + (idxNearest-1)*sStep, sMin + (idxNearest+1)*sStep];
+        let chosenS=null;
+        for (const s0 of sCandidates) { for (let A=aMin; A<aMax; A+=aStep) { if (M[`${fmt(A,aStep)}|${fmt(s0,sStep)}`] != null) { chosenS=s0; break; } } if (chosenS!=null) break; }
+        if (chosenS==null) return [];
+        const out=[]; for (let A=aMin; A<aMax; A+=aStep) { const v=M[`${fmt(A,aStep)}|${fmt(chosenS,sStep)}`]; out.push(v==null?null:Math.round(v*10)/10); }
+        return out;
+      })
+    theta: >-
+      $fn(({hass}) => { const
+      a=hass?.states?.['sensor.polar_matrix']?.attributes; if(!a) return [];
+      const th=[]; for(let A=(+a.twa_min||0); A<(+a.twa_max||180);
+      A+=(+a.twa_step||10)) th.push(A); return th; })
+  - entity: sensor.polar_matrix
+    name: TWS 12 kn
+    type: scatterpolar
+    mode: lines
+    line:
+      shape: spline
+    r: |-
+      $fn(({hass}) => {
+        const st = hass?.states?.['sensor.polar_matrix'];
+        if (!st || !st.attributes) return [];
+        const a = st.attributes, M = a.matrix || {};
+        const aMin = Number(a.twa_min)||0, aMax = Number(a.twa_max)||180, aStep = Number(a.twa_step)||10;
+        const sMin = Number(a.tws_min)||0,  sStep = Number(a.tws_step)||2;
+        const stepDec = (step)=> (String(step).split('.')[1]||'').replace(/0+$/,'').length;
+        const fmt = (v,step)=>{ const d=stepDec(step); return d ? v.toFixed(d) : String(Math.round(v)); };
+        const targetS = 12;
+        const idxNearest = Math.round((targetS - sMin) / sStep);
+        const sCandidates = [sMin + idxNearest*sStep, sMin + (idxNearest-1)*sStep, sMin + (idxNearest+1)*sStep];
+        let chosenS=null;
+        for (const s0 of sCandidates) { for (let A=aMin; A<aMax; A+=aStep) { if (M[`${fmt(A,aStep)}|${fmt(s0,sStep)}`] != null) { chosenS=s0; break; } } if (chosenS!=null) break; }
+        if (chosenS==null) return [];
+        const out=[]; for (let A=aMin; A<aMax; A+=aStep) { const v=M[`${fmt(A,aStep)}|${fmt(chosenS,sStep)}`]; out.push(v==null?null:Math.round(v*10)/10); }
+        return out;
+      })
+    theta: >-
+      $fn(({hass}) => { const
+      a=hass?.states?.['sensor.polar_matrix']?.attributes; if(!a) return [];
+      const th=[]; for(let A=(+a.twa_min||0); A<(+a.twa_max||180);
+      A+=(+a.twa_step||10)) th.push(A); return th; })
+  - entity: sensor.polar_matrix
+    name: TWS 14 kn
+    type: scatterpolar
+    mode: lines
+    line:
+      shape: spline
+    r: |-
+      $fn(({hass}) => {
+        const st = hass?.states?.['sensor.polar_matrix'];
+        if (!st || !st.attributes) return [];
+        const a = st.attributes, M = a.matrix || {};
+        const aMin = Number(a.twa_min)||0, aMax = Number(a.twa_max)||180, aStep = Number(a.twa_step)||10;
+        const sMin = Number(a.tws_min)||0,  sStep = Number(a.tws_step)||2;
+        const stepDec = (step)=> (String(step).split('.')[1]||'').replace(/0+$/,'').length;
+        const fmt = (v,step)=>{ const d=stepDec(step); return d ? v.toFixed(d) : String(Math.round(v)); };
+        const targetS = 14;
+        const idxNearest = Math.round((targetS - sMin) / sStep);
+        const sCandidates = [sMin + idxNearest*sStep, sMin + (idxNearest-1)*sStep, sMin + (idxNearest+1)*sStep];
+        let chosenS=null;
+        for (const s0 of sCandidates) { for (let A=aMin; A<aMax; A+=aStep) { if (M[`${fmt(A,aStep)}|${fmt(s0,sStep)}`] != null) { chosenS=s0; break; } } if (chosenS!=null) break; }
+        if (chosenS==null) return [];
+        const out=[]; for (let A=aMin; A<aMax; A+=aStep) { const v=M[`${fmt(A,aStep)}|${fmt(chosenS,sStep)}`]; out.push(v==null?null:Math.round(v*10)/10); }
+        return out;
+      })
+    theta: >-
+      $fn(({hass}) => { const
+      a=hass?.states?.['sensor.polar_matrix']?.attributes; if(!a) return [];
+      const th=[]; for(let A=(+a.twa_min||0); A<(+a.twa_max||180);
+      A+=(+a.twa_step||10)) th.push(A); return th; })
+  - entity: sensor.polar_matrix
+    name: TWS 16 kn
+    type: scatterpolar
+    mode: lines
+    line:
+      shape: spline
+    r: |-
+      $fn(({hass}) => {
+        const st = hass?.states?.['sensor.polar_matrix'];
+        if (!st || !st.attributes) return [];
+        const a = st.attributes, M = a.matrix || {};
+        const aMin = Number(a.twa_min)||0, aMax = Number(a.twa_max)||180, aStep = Number(a.twa_step)||10;
+        const sMin = Number(a.tws_min)||0,  sStep = Number(a.tws_step)||2;
+        const stepDec = (step)=> (String(step).split('.')[1]||'').replace(/0+$/,'').length;
+        const fmt = (v,step)=>{ const d=stepDec(step); return d ? v.toFixed(d) : String(Math.round(v)); };
+        const targetS = 16;
+        const idxNearest = Math.round((targetS - sMin) / sStep);
+        const sCandidates = [sMin + idxNearest*sStep, sMin + (idxNearest-1)*sStep, sMin + (idxNearest+1)*sStep];
+        let chosenS=null;
+        for (const s0 of sCandidates) { for (let A=aMin; A<aMax; A+=aStep) { if (M[`${fmt(A,aStep)}|${fmt(s0,sStep)}`] != null) { chosenS=s0; break; } } if (chosenS!=null) break; }
+        if (chosenS==null) return [];
+        const out=[]; for (let A=aMin; A<aMax; A+=aStep) { const v=M[`${fmt(A,aStep)}|${fmt(chosenS,sStep)}`]; out.push(v==null?null:Math.round(v*10)/10); }
+        return out;
+      })
+    theta: >-
+      $fn(({hass}) => { const
+      a=hass?.states?.['sensor.polar_matrix']?.attributes; if(!a) return [];
+      const th=[]; for(let A=(+a.twa_min||0); A<(+a.twa_max||180);
+      A+=(+a.twa_step||10)) th.push(A); return th; })
+  - entity: sensor.polar_matrix
+    name: TWS 20 kn
+    type: scatterpolar
+    mode: lines
+    line:
+      shape: spline
+    r: |-
+      $fn(({hass}) => {
+        const st = hass?.states?.['sensor.polar_matrix'];
+        if (!st || !st.attributes) return [];
+        const a = st.attributes, M = a.matrix || {};
+        const aMin = Number(a.twa_min)||0, aMax = Number(a.twa_max)||180, aStep = Number(a.twa_step)||10;
+        const sMin = Number(a.tws_min)||0,  sStep = Number(a.tws_step)||2;
+        const stepDec = (step)=> (String(step).split('.')[1]||'').replace(/0+$/,'').length;
+        const fmt = (v,step)=>{ const d=stepDec(step); return d ? v.toFixed(d) : String(Math.round(v)); };
+        const targetS = 20;
+        const idxNearest = Math.round((targetS - sMin) / sStep);
+        const sCandidates = [sMin + idxNearest*sStep, sMin + (idxNearest-1)*sStep, sMin + (idxNearest+1)*sStep];
+        let chosenS=null;
+        for (const s0 of sCandidates) { for (let A=aMin; A<aMax; A+=aStep) { if (M[`${fmt(A,aStep)}|${fmt(s0,sStep)}`] != null) { chosenS=s0; break; } } if (chosenS!=null) break; }
+        if (chosenS==null) return [];
+        const out=[]; for (let A=aMin; A<aMax; A+=aStep) { const v=M[`${fmt(A,aStep)}|${fmt(chosenS,sStep)}`]; out.push(v==null?null:Math.round(v*10)/10); }
+        return out;
+      })
+    theta: >-
+      $fn(({hass}) => { const
+      a=hass?.states?.['sensor.polar_matrix']?.attributes; if(!a) return [];
+      const th=[]; for(let A=(+a.twa_min||0); A<(+a.twa_max||180);
+      A+=(+a.twa_step||10)) th.push(A); return th; })
+  - entity: sensor.polar_matrix
+    name: TWS 24 kn
+    type: scatterpolar
+    mode: lines
+    line:
+      shape: spline
+    r: |-
+      $fn(({hass}) => {
+        const st = hass?.states?.['sensor.polar_matrix'];
+        if (!st || !st.attributes) return [];
+        const a = st.attributes, M = a.matrix || {};
+        const aMin = Number(a.twa_min)||0, aMax = Number(a.twa_max)||180, aStep = Number(a.twa_step)||10;
+        const sMin = Number(a.tws_min)||0,  sStep = Number(a.tws_step)||2;
+        const stepDec = (step)=> (String(step).split('.')[1]||'').replace(/0+$/,'').length;
+        const fmt = (v,step)=>{ const d=stepDec(step); return d ? v.toFixed(d) : String(Math.round(v)); };
+        const targetS = 24;
+        const idxNearest = Math.round((targetS - sMin) / sStep);
+        const sCandidates = [sMin + idxNearest*sStep, sMin + (idxNearest-1)*sStep, sMin + (idxNearest+1)*sStep];
+        let chosenS=null;
+        for (const s0 of sCandidates) { for (let A=aMin; A<aMax; A+=aStep) { if (M[`${fmt(A,aStep)}|${fmt(s0,sStep)}`] != null) { chosenS=s0; break; } } if (chosenS!=null) break; }
+        if (chosenS==null) return [];
+        const out=[]; for (let A=aMin; A<aMax; A+=aStep) { const v=M[`${fmt(A,aStep)}|${fmt(chosenS,sStep)}`]; out.push(v==null?null:Math.round(v*10)/10); }
+        return out;
+      })
+    theta: >-
+      $fn(({hass}) => { const
+      a=hass?.states?.['sensor.polar_matrix']?.attributes; if(!a) return [];
+      const th=[]; for(let A=(+a.twa_min||0); A<(+a.twa_max||180);
+      A+=(+a.twa_step||10)) th.push(A); return th; })
+raw_plotly_config: true
+layout:
+  showlegend: true
+  margin:
+    l: 40
+    r: 40
+    t: 40
+    b: 40
+  polar:
+    sector:
+      - 0
+      - 180
+    radialaxis:
+      title: Boat speed (kn)
+      tickformat: .1f
+    angularaxis:
+      direction: clockwise
+      rotation: 180
+      tickmode: array
+      tickvals:
+        - 0
+        - 10
+        - 20
+        - 30
+        - 40
+        - 50
+        - 60
+        - 70
+        - 80
+        - 90
+        - 100
+        - 110
+        - 120
+        - 130
+        - 140
+        - 150
+        - 160
+        - 170
+        - 180
+      range:
+        - 0
+        - 180
+```
+
 ---
 
 ## Troubleshooting
