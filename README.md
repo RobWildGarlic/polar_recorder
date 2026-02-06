@@ -42,13 +42,14 @@ Over time, the matrix becomes a practical polar diagram you can use for sail tri
 ## Installation
 ### HACS (recommended)
 1.  Open HACS in Home Assistant
-2.  Go to **Integrations**
+2.  Click three dot menu top right
 3.  Click **⋮ → Custom repositories**
 4.  Add this repository: `https://github.com/robwildgarlic/polar_recorder` Category: **Integration**
 5.  Search  for  **Polar_Recorder**
 6.  Install and restart Home Assistant
-7. Add integration Polar_recorder
-### Manual installation (custom component)
+7. Contuinue configuration (below)
+
+### Manual installation
 
 1. Copy the integration folder into:
 
@@ -56,22 +57,11 @@ Over time, the matrix becomes a practical polar diagram you can use for sail tri
 /config/custom_components/polar_recorder/
 ```
 
-2. Ensure the component includes (at minimum):
+2. Ensure all the component files are copied
 
-```
-__init__.py
-manifest.json
-const.py
-coordinator.py
-sensor.py
-number.py
-services.yaml
-```
 
 3. Restart Home Assistant.
 
-4. Add the integration:
-   - **Settings → Devices & services → Add integration → “Polar Recorder”**
 
 ## Configuration
 
